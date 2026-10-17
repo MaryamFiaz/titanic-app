@@ -59,10 +59,8 @@ tab1, tab2 = st.tabs(["🔮 AI Survival Prediction", "📊 Dataset Analytics"])
 def load_model():
     model_filename = "titanic_decision_tree_model.pkl"
     try:
-        # Try loading with joblib first
         return joblib.load(model_filename)
     except Exception:
-        # Fallback to pickle
         with open(model_filename, "rb") as f:
             return pickle.load(f)
 
@@ -73,14 +71,17 @@ with tab1:
         sex_val = 1 if sex.lower() == "female" else 0
         emb_map = {"Southampton (S)": 0, "Cherbourg (C)": 1, "Queenstown (Q)": 2}
         emb_val = emb_map[embarked]
+        
+        # Calculate Family Size as the 8th feature
+        family_size = sibsp + parch + 1
 
-        input_data = np.array([[pclass, sex_val, age, sibsp, parch, fare, emb_val]])
+        # 8 features total matching the trained model
+        input_data = np.array([[pclass, sex_val, age, sibsp, parch, fare, emb_val, family_size]])
 
         try:
             model = load_model()
             prediction = model.predict(input_data)[0]
             
-            # Get probability if model supports it
             prob = None
             if hasattr(model, "predict_proba"):
                 prob = model.predict_proba(input_data)[0][1] * 100
