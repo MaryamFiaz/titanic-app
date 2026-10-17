@@ -68,18 +68,17 @@ with tab1:
     st.subheader("Prediction Dashboard")
     
     if st.button("🚀 Predict Survival Status", use_container_width=True):
-        # Agar training mein Male=1 aur Female=0 tha toh yeh set karein:
-        sex_val = 0 if sex.lower() == "female" else 1
-        emb_map = {"Southampton (S)": 0, "Cherbourg (C)": 1, "Queenstown (Q)": 2}
-        emb_val = emb_map[embarked]
-        
-        # Calculate Family Size as the 8th feature
+        # One-hot encoding variables exact matching training features error logs
+        is_male = 1 if sex.lower() == "male" else 0
         family_size = sibsp + parch + 1
+        
+        emb_q = 1 if "Queenstown" in embarked else 0
+        emb_s = 1 if "Southampton" in embarked else 0
 
-        # DataFrame use karein taake model ko exact column names aur order mile
+        # Model ke required column names ke mutabiq DataFrame
         input_data = pd.DataFrame([[
-            pclass, sex_val, age, sibsp, parch, fare, emb_val, family_size
-        ]], columns=['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked', 'FamilySize'])
+            pclass, age, sibsp, parch, fare, family_size, emb_q, emb_s, is_male
+        ]], columns=['Pclass', 'Age', 'SibSp', 'Parch', 'Fare', 'FamilySize', 'Embarked_Q', 'Embarked_S', 'Sex_male'])
 
         try:
             model = load_model()
