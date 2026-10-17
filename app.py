@@ -61,24 +61,22 @@ def load_model():
     try:
         return joblib.load(model_filename)
     except Exception:
-        with open(model_filename, "rb") as f:
+        with open(model_filename, "rb5") as f:
             return pickle.load(f)
 
 with tab1:
     st.subheader("Prediction Dashboard")
     
     if st.button("🚀 Predict Survival Status", use_container_width=True):
-        # One-hot encoding variables exact matching training features error logs
         is_male = 1 if sex.lower() == "male" else 0
-        family_size = sibsp + parch + 1
         
         emb_q = 1 if "Queenstown" in embarked else 0
         emb_s = 1 if "Southampton" in embarked else 0
 
-        # Model ke required column names ke mutabiq DataFrame
+        # Model ke required columns (FamilySize hata kar)
         input_data = pd.DataFrame([[
-            pclass, age, sibsp, parch, fare, family_size, emb_q, emb_s, is_male
-        ]], columns=['Pclass', 'Age', 'SibSp', 'Parch', 'Fare', 'FamilySize', 'Embarked_Q', 'Embarked_S', 'Sex_male'])
+            pclass, age, sibsp, parch, fare, emb_q, emb_s, is_male
+        ]], columns=['Pclass', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked_Q', 'Embarked_S', 'Sex_male'])
 
         try:
             model = load_model()
