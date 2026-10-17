@@ -61,16 +61,49 @@ def load_model():
     try:
         return joblib.load(model_filename)
     except Exception:
-        with open(model_filename, "rb") as f:
-            return pickle.load(f)
-
-with tab1:
-    st.subheader("Prediction Dashboard")
-    
-    if st.button("🚀 Predict Survival Status", use_container_width=True):
-        sex_val = 1 if sex.lower() == "female" else 0
+       if st.button("🚀 Predict Survival Status", use_container_width=True):
+        # Yahan check kar lein ke agar training mein Male=1 aur Female=0 tha, 
+        # toh isay us hisab se set karein (Aam tor par Titanic datasets mein Male=1, Female=0 hota hai)
+        sex_val = 0 if sex.lower() == "female" else 1
         emb_map = {"Southampton (S)": 0, "Cherbourg (C)": 1, "Queenstown (Q)": 2}
         emb_val = emb_map[embarked]
+        
+        # Calculate Family Size
+        family_size = sibsp + parch + 1
+
+        # DataFrame use karein taake model ko exact column names aur order mile
+        # (Note: Agar aapke model ke training columns ka order mukhtalif tha, 
+        # toh columns ka naam wahi likhein jo training data mein tha)
+        input_data = pd.DataFrame([[
+            pclass, sex_val, age, sibsp, parch, fare, emb_val, family_size
+        ]], columns=['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked', 'FamilySize'])
+
+        try:
+            model = load_model()
+            
+            # Agar model ne DataFrame demand kiya tha ya Pipeline thi toh yeh direct chalega
+            prediction = model.predict(input_data)[0]
+            
+            prob = None
+            if hasattr(model, "predict_proba"):
+                prob = model.predict_proba(input_data)[0][1] * 100
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                if prob is not None:
+                    st.metric(label="Calculated Survival Probability", value=f"{prob:.1f}%")
+                else:
+                    st.metric(label="Prediction Result", value="Calculated")
+
+            with col2:
+                if prediction == 1:
+                    st.markdown('<div class="status-survived">🎉 Result: Passenger Survived</div>', unsafe_allow_html=True)
+                else:
+                    st.markdown('<div class="status-died">⚠️ Result: Did Not Survive</div>', unsafe_allow_html=True)
+
+        except Exception as e:
+            st.error(f"Error loading prediction model: {e}")
         
         # Calculate Family Size as the 8th feature
         family_size = sibsp + parch + 1
