@@ -123,3 +123,16 @@ with tab2:
         template="plotly_white"
     )
     st.plotly_chart(fig, use_container_width=True)
+    # Misalignment avoid karne ke liye columns ka exact order wahi rakhein jo training mein tha:
+input_data = pd.DataFrame(
+    [[pclass, sex, age, fare, sibsp, parch, embarked]],
+    columns=[
+        "Pclass",
+        "Sex",
+        "Age",
+        "Fare",
+        "SibSp",
+        "Parch",
+        "Embarked",
+    ],
+)
