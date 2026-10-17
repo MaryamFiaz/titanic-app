@@ -61,7 +61,7 @@ def load_model():
     try:
         return joblib.load(model_filename)
     except Exception:
-        with open(model_filename, "rb5") as f:
+        with open(model_filename, "rb") as f:
             return pickle.load(f)
 
 with tab1:
@@ -69,14 +69,11 @@ with tab1:
     
     if st.button("🚀 Predict Survival Status", use_container_width=True):
         is_male = 1 if sex.lower() == "male" else 0
-        
         emb_q = 1 if "Queenstown" in embarked else 0
         emb_s = 1 if "Southampton" in embarked else 0
 
-        # Model ke required columns (FamilySize hata kar)
-        input_data = pd.DataFrame([[
-            pclass, age, sibsp, parch, fare, emb_q, emb_s, is_male
-        ]], columns=['Pclass', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked_Q', 'Embarked_S', 'Sex_male'])
+        # DataFrame ki bajaye direct NumPy array pass kar rahe hain taake feature name error khatam ho jaye
+        input_data = np.array([[pclass, age, sibsp, parch, fare, emb_q, emb_s, is_male]])
 
         try:
             model = load_model()
